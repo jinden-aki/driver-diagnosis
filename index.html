@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5ドライバー診断 | あなたの経営スタイルを解明する</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0e;
+    --paper: #f5f0e8;
+    --accent: #c4391a;
+    --accent-soft: #f0d5ce;
+    --muted: #7a7068;
+    --border: #d4cfc5;
+    --white: #fdfaf5;
+    --gold: #b8960c;
+    --navy: #1a3c5e;
+    --green: #2d6a4f;
+    --deep-red: #7a1f1f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Serif JP', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(196,57,26,0.035) 39px, rgba(196,57,26,0.035) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(196,57,26,0.025) 39px, rgba(196,57,26,0.025) 40px);
+    pointer-events: none; z-index: 0;
+  }
+
+  .screen {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: none; flex-direction: column; align-items: center;
+    padding: 0 20px;
+  }
+  .screen.active { display: flex; }
+
+  /* ══════ TOP ══════ */
+  #screen-top {
+    justify-content: center; text-align: center; padding: 60px 20px;
+  }
+  .top-inner { max-width: 520px; width: 100%; }
+
+  .logo-mark {
+    width: 56px; height: 56px;
+    border: 1.5px solid var(--accent); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 36px;
+    font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent);
+    position: relative;
+  }
+  .logo-mark::after {
+    content: ''; position: absolute; inset: 4px;
+    border: 1px solid rgba(196,57,26,0.25); border-radius: 50%;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--accent);
+    text-transform: uppercase; margin-bottom: 22px;
+  }
+
+  .top-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(26px, 7vw, 44px);
+    font-weight: 700; line-height: 1.4; color: var(--ink); margin-bottom: 10px;
+  }
+  .top-title em { font-style: normal; color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+  .top-en {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 4px; margin-bottom: 36px;
+  }
+
+  .divider { width: 36px; height: 1px; background: var(--accent); margin: 0 auto 32px; }
+
+  .top-desc { font-size: 14px; line-height: 2.1; color: var(--muted); margin-bottom: 40px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 44px; }
+  .chip {
+    padding: 5px 14px; border: 1px solid var(--border); border-radius: 2px;
+    font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace;
+  }
+
+  /* ニックネーム入力 */
+  .name-block {
+    background: var(--white); border: 1px solid var(--border);
+    padding: 28px; margin-bottom: 32px; text-align: left;
+  }
+  .name-label {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 10px; display: block;
+  }
+  .name-input {
+    width: 100%; padding: 14px 16px;
+    border: 1px solid var(--border); background: var(--paper);
+    font-family: 'Shippori Mincho', serif; font-size: 18px; color: var(--ink);
+    outline: none; transition: border-color 0.2s;
+  }
+  .name-input:focus { border-color: var(--accent); }
+  .name-hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .btn-start {
+    display: inline-block; padding: 18px 56px;
+    background: var(--ink); color: var(--white);
+    font-family: 'Shippori Mincho', serif; font-size: 16px; font-weight: 700;
+    letter-spacing: 2px; border: none; cursor: pointer; transition: all 0.3s ease;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    position: relative;
+  }
+  .btn-start:hover { background: var(--accent); transform: translateY(-2px); }
+  .top-note { margin-top: 24px; font-size: 11px; color: rgba(122,112,104,0.6); font-family: 'DM Mono', monospace; }
+
+  /* ══════ QUIZ ══════ */
+  #screen-quiz { justify-content: flex-start; padding-top: 0; }
+
+  .quiz-header {
+    width: 100%; max-width: 680px;
+    padding: 28px 0 16px; position: sticky; top: 0;
+    background: var(--paper); z-index: 10;
+    border-bottom: 1px solid rgba(212,207,197,0.5);
+  }
+  .progress-wrap { display: flex; align-items: center; gap: 16px; }
+  .progress-bar { flex: 1; height: 2px; background: var(--border); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); transition: width 0.6s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+  .progress-num { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); white-space: nowrap; min-width: 44px; text-align: right; }
+
+  .quiz-body { width: 100%; max-width: 680px; padding: 36px 0 80px; }
+
+  .scene-card {
+    background: var(--ink); color: var(--white);
+    padding: 26px 30px; margin-bottom: 32px;
+    position: relative; overflow: hidden;
+    opacity: 0; animation: fadeUp 0.45s ease forwards 0.1s;
+  }
+  .scene-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); }
+  .scene-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px; color: rgba(255,255,255,0.35); text-transform: uppercase; margin-bottom: 12px; }
+  .scene-text { font-family: 'Shippori Mincho', serif; font-size: clamp(14px, 3.5vw, 17px); line-height: 1.85; }
+  .scene-arrow { display: block; margin-top: 14px; font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 1px; }
+
+  .question-wrap { opacity: 0; animation: fadeUp 0.45s ease forwards 0.2s; margin-bottom: 24px; }
+  .q-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+  .q-text { font-family: 'Shippori Mincho', serif; font-size: clamp(15px, 3.8vw, 19px); font-weight: 700; line-height: 1.65; color: var(--ink); }
+
+  .opts { display: flex; flex-direction: column; gap: 10px; opacity: 0; animation: fadeUp 0.45s ease forwards 0.3s; }
+  .opt-btn {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 17px 20px; background: var(--white);
+    border: 1px solid var(--border); cursor: pointer;
+    text-align: left; width: 100%; transition: all 0.22s ease;
+    position: relative; overflow: hidden;
+  }
+  .opt-btn::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); transform: scaleY(0); transform-origin: center; transition: transform 0.22s ease; }
+  .opt-btn:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateX(4px); }
+  .opt-btn:hover::after { transform: scaleY(1); }
+  .opt-btn.selected { border-color: var(--accent); background: var(--accent-soft); transform: translateX(4px); pointer-events: none; }
+  .opt-btn.selected::after { transform: scaleY(1); }
+  .opt-n { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(196,57,26,0.6); min-width: 16px; margin-top: 3px; flex-shrink: 0; }
+  .opt-t { font-size: 14px; line-height: 1.75; color: var(--ink); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ══════ RESULT ══════ */
+  #screen-result { padding: 56px 20px 80px; justify-content: flex-start; }
+
+  .rw { width: 100%; max-width: 680px; opacity: 0; animation: fadeUp 0.6s ease forwards 0.1s; }
+
+  .r-eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
+  .r-name-tag { font-size: 13px; color: var(--muted); margin-bottom: 16px; font-family: 'DM Mono', monospace; }
+  .r-main-name { font-family: 'Shippori Mincho', serif; font-size: clamp(32px, 9vw, 54px); font-weight: 900; line-height: 1.1; color: var(--ink); margin-bottom: 6px; }
+  .r-main-en { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted); letter-spacing: 3px; margin-bottom: 8px; }
+  .r-voice { font-size: 13px; color: var(--muted); font-style: italic; margin-bottom: 10px; }
+  .r-pcm-badge {
+    display: inline-block; padding: 4px 12px;
+    border: 1px solid var(--gold); color: var(--gold);
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 1px; margin-bottom: 36px;
+  }
+  .r-divider { height: 1px; background: var(--border); margin-bottom: 36px; }
+
+  /* Score bars */
+  .score-section { margin-bottom: 44px; }
+  .sec-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 20px; }
+  .sbar { margin-bottom: 14px; }
+  .sbar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .sbar-nm { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .sbar-nm span { font-weight: 400; color: var(--muted); font-size: 11px; margin-left: 5px; }
+  .sbar-v { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .sbar-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .sbar-fill { height: 100%; border-radius: 2px; transition: width 1.1s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+
+  /* Detail cards */
+  .detail-cards { display: grid; gap: 20px; margin-bottom: 44px; }
+
+  .dcard { padding: 28px; background: var(--white); border: 1px solid var(--border); position: relative; overflow: hidden; }
+  .dcard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .dcard.strength::before { background: var(--accent); }
+  .dcard.shadow::before  { background: var(--navy); }
+  .dcard.jobs::before    { background: var(--gold); }
+  .dcard.sub::before     { background: var(--green); }
+
+  .dcard-badge { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  .dcard.strength .dcard-badge { color: var(--accent); }
+  .dcard.shadow  .dcard-badge  { color: var(--navy); }
+  .dcard.jobs    .dcard-badge  { color: var(--gold); }
+  .dcard.sub     .dcard-badge  { color: var(--green); }
+
+  .dcard-title { font-family: 'Shippori Mincho', serif; font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 14px; }
+  .dcard-body { font-size: 14px; line-height: 2.1; color: #3a3530; }
+
+  .verb-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .verb { padding: 6px 14px; border: 1px solid var(--border); font-size: 12px; color: var(--ink); font-weight: 700; background: var(--paper); }
+  .verb.dark { background: var(--ink); border-color: var(--ink); color: var(--white); }
+  .verb.gold { background: var(--gold); border-color: var(--gold); color: var(--white); }
+
+  /* Insight */
+  .insight { background: var(--ink); color: var(--white); padding: 32px; margin-bottom: 44px; position: relative; overflow: hidden; }
+  .insight::before { content: '"'; position: absolute; top: 6px; left: 18px; font-family: 'Shippori Mincho', serif; font-size: 100px; line-height: 1; color: rgba(255,255,255,0.05); pointer-events: none; }
+  .insight-body { font-family: 'Shippori Mincho', serif; font-size: 14px; line-height: 2.2; position: relative; z-index: 1; }
+  .insight-act { margin-top: 16px; font-size: 12px; color: rgba(255,255,255,0.4); font-family: 'DM Mono', monospace; position: relative; z-index: 1; }
+
+  /* Permission */
+  .perm-box { background: var(--white); border: 1px solid var(--border); padding: 28px; margin-bottom: 44px; }
+  .perm-title { font-family: 'Shippori Mincho', serif; font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 12px; }
+  .perm-body { font-size: 13px; line-height: 2.1; color: #3a3530; margin-bottom: 18px; }
+  .perm-list { display: flex; flex-direction: column; gap: 8px; }
+  .perm-item { display: flex; align-items: center; gap: 10px; font-family: 'Shippori Mincho', serif; font-size: 14px; font-weight: 700; }
+  .perm-dot { width: 20px; height: 20px; border: 1.5px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--accent); flex-shrink: 0; }
+
+  /* Action buttons */
+  .action-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 44px; }
+
+  .btn-dl {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 17px 24px; background: var(--ink); color: var(--white);
+    font-family: 'Shippori Mincho', serif; font-size: 15px; font-weight: 700;
+    border: none; cursor: pointer; transition: all 0.3s; width: 100%;
+  }
+  .btn-dl:hover { background: #2a2828; transform: translateY(-2px); }
+
+  .btn-line {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 17px 24px; background: #06C755; color: var(--white);
+    font-family: 'Shippori Mincho', serif; font-size: 15px; font-weight: 700;
+    border: none; cursor: pointer; transition: all 0.3s; width: 100%;
+    text-decoration: none;
+  }
+  .btn-line:hover { background: #05a847; transform: translateY(-2px); }
+
+  .btn-cta {
+    display: block; width: 100%; padding: 18px 32px;
+    background: var(--accent); color: var(--white);
+    font-family: 'Shippori Mincho', serif; font-size: 15px; font-weight: 700;
+    letter-spacing: 1px; border: none; cursor: pointer; transition: all 0.3s;
+    margin-bottom: 12px;
+  }
+  .btn-cta:hover { background: #a02a14; transform: translateY(-2px); }
+
+  .btn-retry { display: block; margin: 0 auto; background: none; border: none; font-size: 13px; color: var(--muted); text-decoration: underline; cursor: pointer; font-family: 'Noto Serif JP', serif; }
+  .btn-retry:hover { color: var(--ink); }
+
+  .cta-block { text-align: center; border-top: 1px solid var(--border); padding-top: 44px; }
+  .cta-title { font-family: 'Shippori Mincho', serif; font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+  .cta-sub { font-size: 13px; color: var(--muted); line-height: 1.9; margin-bottom: 28px; }
+
+  .icon { display: inline-block; width: 20px; height: 20px; }
+</style>
+</head>
+<body>
+
+<!-- ══════ TOP ══════ -->
+<div class="screen active" id="screen-top">
+  <div class="top-inner">
+    <div class="logo-mark">5D</div>
+    <div class="eyebrow">Driver Diagnosis for Salon Owners</div>
+    <h1 class="top-title">あなたの経営を<br>動かしている<br><em>「声」</em>を知る</h1>
+    <div class="top-en">5 DRIVERS SITUATION TEST</div>
+    <div class="divider"></div>
+    <p class="top-desc">
+      理美容室の「あるあるシーン」12問に答えるだけで、<br>
+      あなたの経営スタイルを支配するドライバーが<br>
+      見えてきます。
+    </p>
+    <div class="chips">
+      <span class="chip">12 scenes</span>
+      <span class="chip">~2 min</span>
+      <span class="chip">サロンオーナー向け</span>
+      <span class="chip">交流分析ベース</span>
+    </div>
+
+    <div class="name-block">
+      <label class="name-label" for="nickname">Your Nickname</label>
+      <input class="name-input" id="nickname" type="text" placeholder="例：たかし、みほさん、田中オーナー" maxlength="20" />
+      <div class="name-hint">※ 結果データに使用します（本名でなくてもOK）</div>
+    </div>
+
+    <button class="btn-start" onclick="startQuiz()">シーン診断をはじめる</button>
+    <div class="top-note">© 神田 / LINE Beauty Seminar</div>
+  </div>
+</div>
+
+<!-- ══════ QUIZ ══════ -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-header">
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="pf"></div></div>
+      <div class="progress-num" id="pn">1 / 12</div>
+    </div>
+  </div>
+  <div class="quiz-body" id="qbody"></div>
+</div>
+
+<!-- ══════ RESULT ══════ -->
+<div class="screen" id="screen-result">
+  <div class="rw" id="rwrap"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   DRIVER DATA（詳細版）
+════════════════════════════════════════ */
+const DRV = {
+  A: {
+    name:'完璧であれ', en:'BE PERFECT', emoji:'🏆',
+    voice:'「きちんとしなさい」「ミスは許されない」',
+    pcm:'PCM：思考型（Thinker）／ 交流分析：批判的親（CP）優位',
+    color:'#c4391a',
+
+    strength:`【あなたの強み：どんな場面で輝くか】
+あなたは「仕上がりの質」で勝負できるオーナーです。カットの量感ひとつ、シャンプー台の水はねひとつに気づける観察眼は、お客様の満足度を底上げするリアルな武器になります。
+
+特に力を発揮するのは、①技術指導の場面、②メニュー開発・品質基準の設計、③新規顧客の初回接客です。「この人に任せれば間違いない」という信頼は、あなたのような精度への執着から生まれます。また、マニュアル整備やチェックリスト設計など、「再現性を作る仕事」が最も得意なタイプ。スタッフ10名を超えても品質が崩れないサロンのオーナーには、このドライバーが多いです。`,
+
+    shadow:`【経営の落とし穴：無自覚に起きていること】
+最大のリスクは「頭の中の基準が外に出ていない」ことです。あなたが「明らかにおかしい」と思うレベルは、スタッフには見えません。「なぜわからないの？」という怒りの裏に、「言語化されていないルール」が潜んでいます。
+
+スタッフは「何をやっても怒られる」と感じ始め、自発的な行動を止めます。自信をなくしたスタッフは確認を繰り返すか、萎縮して黙るかのどちらかになる。気づけば「自分でやった方が早い」が口癖になり、あなた自身がボトルネックになっています。技術チェックで「まあいいか」が言えないオーナーは、このパターンに要注意です。`,
+
+    jobs:`【適性がある業務・役割】
+技術研修の設計と実施 ／ 接客マニュアル整備 ／ 品質基準書の作成 ／ 新メニュー開発 ／ スタッフ技術チェック ／ 店舗の清掃・オペレーション標準化 ／ クレーム対応の仕組み化 ／ SNS投稿の品質管理`,
+
+    verbs:['基準化する','仕組み化する','精査する','再現させる','言語化する','設計する','チェックする','磨き上げる'],
+
+    insight:`あなたが求める「完璧」の基準は、スタッフには見えていません。あなたの頭の中だけにあります。「なぜわからないのか」と感じる時、実は「伝えていない」だけのことが多い。言語化・マニュアル化こそがあなたの次のステップです。基準を外に出した瞬間、あなたのこだわりはチームの強みに変わります。`,
+
+    action:'「自分が当たり前と思っていること」を箇条書きにしてスタッフと共有する',
+  },
+
+  B: {
+    name:'強くあれ', en:'BE STRONG', emoji:'🏔',
+    voice:'「弱みを見せるな」「弱音を吐くな」',
+    pcm:'PCM：行動型（Doer）／ 交流分析：批判的親（CP）＋ 適応した子供（AC）',
+    color:'#1a3c5e',
+
+    strength:`【あなたの強み：どんな場面で輝くか】
+逆境で最も力を発揮するタイプです。売上が落ちた月、スタッフが急に辞めた時、クレームが連続した時──そういう「普通の人なら折れる場面」で、あなたは冷静に判断し動き続けられます。
+
+特に力を発揮するのは、①危機対応（急なトラブル・クレーム処理）、②多店舗展開の意思決定、③銀行や取引先との交渉です。「動じない」「泣き言を言わない」リーダーの存在は、スタッフに安心感を与えます。経営者として孤独な判断を迫られる場面、誰も答えを教えてくれない時──そこでスタミナが切れないのはあなたの本物の強みです。`,
+
+    shadow:`【経営の落とし穴：無自覚に起きていること】
+あなたのサロンでは、スタッフが「本音を言えない」状態になっている可能性が高いです。スタッフが「しんどくて…」と打ち明けた時、励ますつもりで自分の苦労話をしていませんか？その瞬間、相手は「この人には相談できない」と学習します。次の相談は退職届です。
+
+感情を軽視するリーダーのもとでは、スタッフは突然辞めます。前兆が見えないのは、あなたが無意識に「弱さを見せるな」という空気を作っているから。「うちは風通しがいい」と思っているオーナーほど、匿名アンケートで「本音を言ったら怒られる」という回答が集まります。`,
+
+    jobs:`【適性がある業務・役割】
+経営判断・意思決定全般 ／ 金融機関・税理士との折衝 ／ 多店舗展開の統括 ／ 危機対応・クレーム処理 ／ 新業態・新サービスの立ち上げ ／ ハードな交渉・価格設定 ／ 採用面接での最終判断`,
+
+    verbs:['決断する','統括する','交渉する','突破する','実行する','牽引する','立て直す','責任を取る'],
+
+    insight:`スタッフが「しんどくて…」と言った時、あなたは無意識に話を切り上げていませんか？「強くあれ」のドライバーは、自分だけでなく周りにも「弱さを見せてはいけない」という空気を作ります。まず「聞く」を意識的に先に行うだけで、あなたのサロンの離職率は変わります。`,
+
+    action:'1on1で最初の3分間は「解決策を言わない」ルールを自分に課す',
+  },
+
+  C: {
+    name:'急げ', en:'HURRY UP', emoji:'⚡',
+    voice:'「グズグズするな」「時間がもったいない」',
+    pcm:'PCM：反応型（Reactor）＋ 反乱型（Rebel）／ 交流分析：批判的親（CP）＋ 自然な子供（FC）',
+    color:'#b8960c',
+
+    strength:`【あなたの強み：どんな場面で輝くか】
+スピードと決断力が最大の武器です。「やると決めたら即日動く」このテンポ感は、競合が迷っている間に先手を取れる経営者の資質そのものです。
+
+特に力を発揮するのは、①新サービスの導入・実験、②スタッフの採用面接（即決・即断が強み）、③SNSや新しいトレンドへの対応です。ホットペッパーの順位が落ちた時、すぐにLINE配信を打てる、新しい薬剤が出たら即トライできる──このフットワークの軽さがサロンの新陳代謝を保ちます。また、退屈な停滞を嫌うため、スタッフにとって「飽きない職場」になりやすいのも強みです。`,
+
+    shadow:`【経営の落とし穴：無自覚に起きていること】
+「早く！」が口癖のオーナーのもとでは、スタッフが「焦り→ミス→叱責→萎縮」のループに陥ります。あなたにとっての「普通のスピード」は、スタッフにとって「全速力」です。この認識のズレが、成長途中のスタッフを潰します。
+
+また、話が長いスタッフへのイライラが「表情」に出ると、スタッフは「早く話し終わらなければ」と焦り、肝心の相談内容が伝わらなくなります。「何を言っても聞いてもらえない」と感じたスタッフは、問題が大きくなるまで何も言わなくなる。気づいた時には手遅れというケースがこのタイプに多いです。`,
+
+    jobs:`【適性がある業務・役割】
+新サービス・新メニューのテスト導入 ／ SNS・LINE配信のスピード運用 ／ 繁忙期の即応対応 ／ 採用面接（スピード判断） ／ 新規顧客獲得施策の実行 ／ スタッフの行動量管理 ／ キャンペーン企画の即実行`,
+
+    verbs:['即断する','先手を打つ','実験する','スピードアップする','突き進む','フットワークを使う','仕掛ける','テンポを作る'],
+
+    insight:`あなたのスピードは武器ですが、スタッフへの「早く！」は彼らの成長を止めます。「いつまでに何ができればOKか」を先に定義するだけで、あなたのスピードとスタッフの成長が初めて噛み合います。ゴールが見えれば、人は自分で動き出します。`,
+
+    action:'「3ヶ月でここまで」の具体的なマイルストーンをスタッフと一緒に決める',
+  },
+
+  D: {
+    name:'人を喜ばせろ', en:'PLEASE OTHERS', emoji:'🎭',
+    voice:'「みんなに好かれなさい」「嫌われたらダメ」',
+    pcm:'PCM：感情型（Feeler）／ 交流分析：適応した子供（AC）優位',
+    color:'#2d6a4f',
+
+    strength:`【あなたの強み：どんな場面で輝くか】
+お客様との関係構築と、スタッフが「話しかけやすい」雰囲気作りが最大の強みです。初回来店のお客様を常連にする力、スタッフが「このオーナーの下で働きたい」と感じる職場の空気感──これらはこのドライバーにしか生み出せない価値です。
+
+特に力を発揮するのは、①新規接客・カウンセリング、②スタッフの採用・オンボーディング、③お客様からのフィードバック収集です。クレームを笑顔に変える接客力、誰も傷つけない言葉の選び方は、チームの心理的安全性を高める土台になります。「このお店、雰囲気いいよね」という口コミはあなたから生まれています。`,
+
+    shadow:`【経営の落とし穴：無自覚に起きていること】
+「優しいリーダー」のつもりが「嫌われるのが怖いリーダー」になっていませんか？遅刻を繰り返すスタッフに注意できないオーナーのもとでは、真面目なスタッフが「不公平だ」と先に辞めます。問題のあるスタッフを守ろうとして、問題のないスタッフを追い出している逆転現象です。
+
+また「全員に気に入られようとする」ため、重要な決断が先延ばしになりがちです。給与改定、ルール整備、人員配置の変更──これらを「嫌われそう」という感情で先送りするほど、スタッフの不満は水面下で蓄積します。気づいた時には、全員が何も言わないサロンになっています。`,
+
+    jobs:`【適性がある業務・役割】
+新規顧客カウンセリング ／ リピーター関係維持 ／ スタッフ採用面接（雰囲気作り）／ 新人研修のオンボーディング ／ お客様アンケートの設計・分析 ／ クレーム初期対応 ／ チームビルディングイベントの企画`,
+
+    verbs:['関係を作る','雰囲気を整える','歓迎する','つなぐ','引き出す','安心させる','共感する','育てる'],
+
+    insight:`「注意すること」は攻撃ではなく、スタッフへの投資です。言えない優しさは、相手の成長機会を奪います。「嫌われるかも」という恐れを感じた時こそ、それが「言うべきこと」のサインです。あなたの優しさを、勇気に変えてください。`,
+
+    action:'「注意した後に必ずフォローする」セットを習慣化し、注意そのものへの恐れを減らす',
+  },
+
+  E: {
+    name:'努力し続けろ', en:'TRY HARD', emoji:'🔥',
+    voice:'「もっと頑張れ」「休んでる場合じゃない」',
+    pcm:'PCM：夢想型（Dreamer）＋ 行動型（Doer）／ 交流分析：養育的親（NP）＋ 批判的親（CP）',
+    color:'#7a1f1f',
+
+    strength:`【あなたの強み：どんな場面で輝くか】
+情熱と継続力が最大の武器です。「できるようになるまでやり続ける」この姿勢は、技術職であるサロン経営において本物の競争優位になります。スタッフへの技術継承、若手の育成、サロンの技術レベルの底上げ──これらはあなたのような「努力を美徳とする」オーナーにしか実現できません。
+
+特に力を発揮するのは、①長期的な技術研修の設計、②コンテスト・フォト撮影など高い目標に向けたプロジェクト、③どん底からの再建です。「叩き上げ」の信頼感と、「この人が頑張っているなら自分も」というスタッフへの感化力は、このタイプの固有の財産です。`,
+
+    shadow:`【経営の落とし穴：無自覚に起きていること】
+あなたにとっての「普通の頑張り」は、多くの人にとって「異常な頑張り」です。この認識のズレが、スタッフを全員「やる気がない人」に見せてしまいます。「もっとできるはず」という言葉は、今頑張っているスタッフの努力を否定します。
+
+また「努力＝正義」という価値観が、プロセスへの固執を生みます。成果より頑張り量を評価するため、効率化提案を「楽をしようとしている」と受け取ることも。休むことへの罪悪感は、スタッフにも伝染します。気づけばサロン全体が「燃え尽き症候群」の空気になっていることがあります。`,
+
+    jobs:`【適性がある業務・役割】
+技術研修・カリキュラム設計 ／ コンテスト・受賞戦略の立案 ／ 長期採用・育成計画の策定 ／ ブランディング（叩き上げストーリー）／ 厳しい環境での新店立ち上げ ／ フォト・ビジュアル制作の監修 ／ スタッフのモチベーション管理`,
+
+    verbs:['育て上げる','積み重ねる','鍛える','磨き続ける','情熱を伝える','継続させる','やり抜く','本物にする'],
+
+    insight:`「頑張ること」に意味があるのは、ゴールが見えている時だけです。「まだ足りない」では、スタッフはいつゴールテープを切れるかわかりません。「ここまでできたら合格」という具体的な基準を渡してください。あなたの情熱は、方向さえ合えばチーム全体のエンジンになります。`,
+
+    action:'「頑張り量」ではなく「この状態になったらOK」という具体的な完成形を定義する',
+  },
+};
+
+/* ════════════════════════════════════════
+   10 SITUATIONS × 5択（A〜E全ドライバー）
+   ※ 表示順はrender()内でランダムシャッフル
+════════════════════════════════════════ */
+const QS = [
+  {
+    n:1,
+    scene:'入店1ヶ月の新人アシスタント。シャンプーを覚えたが動作がぎこちなく、施術に時間がかかっている。次の予約は15分後。',
+    q:'この状況で、あなたが思わずやってしまいそうなことは？',
+    opts:[
+      {d:'A', t:'「その動き、見てられない。貸して、こうやるの」と手を出して手本を見せてしまう'},
+      {d:'B', t:'「俺の頃は誰も教えてくれなかった。自分で掴むしかない」と心の中で思いながら何も言わない'},
+      {d:'C', t:'「もっとテキパキ動いて！ 次の予約、間に合わなくなるよ」と声が出てしまう'},
+      {d:'D', t:'「まだ1ヶ月だし…怒ったら萎縮しそう。もう少し様子を見よう」と言えないままでいる'},
+      {d:'E', t:'「自分は3週間で覚えた。1ヶ月あれば普通もっとできるはずなのに」と内心思ってしまう'},
+    ]
+  },
+  {
+    n:2,
+    scene:'閉店後の片付け中、スタッフのAさんが「最近、体がしんどくて…少し休みたいかもです」と話しかけてきた。',
+    q:'あなたが最初に口から出てしまいそうな言葉は？',
+    opts:[
+      {d:'A', t:'「具体的にどこが？ 施術に影響は出てる？ 何が原因か整理して」と事実確認から入る'},
+      {d:'B', t:'「うちの開業当時なんて、倒れる寸前まで働いてたよ。乗り越えてなんぼだ」と言いたくなる'},
+      {d:'C', t:'「今は繁忙期前だから。落ち着いたらゆっくり話そう」と後回しにしてしまう'},
+      {d:'D', t:'「そっか、大変だったね…。何かできることある？」と言いながら内心焦ってしまう'},
+      {d:'E', t:'「しんどいのはわかるけど、もう少し頑張れない？ うちには今あなたが必要だから」と言ってしまう'},
+    ]
+  },
+  {
+    n:3,
+    scene:'技術チェック中。スタッフBさんのカットは合格ラインだが、量感の処理が自分のやり方と微妙に違う。お客様は満足している。',
+    q:'このとき、あなたが自然と取る行動は？',
+    opts:[
+      {d:'A', t:'「OK、でもここの量感は本来こうすべき」と合格を出しながらも直し方を伝えずにはいられない'},
+      {d:'B', t:'「合格。以上」と短く終わらせる。感想やフォローは不要、結果が全てだ'},
+      {d:'C', t:'「OK！ 次、早く行こう。他の子も待ってるから」と次へ急かしてしまう'},
+      {d:'D', t:'「う〜ん、自分のやり方とは違うけど…まあBさんなりの個性だよね」と言えないまま流す'},
+      {d:'E', t:'「合格ラインは超えてるけど、満足しちゃダメ。もっと上を目指してほしい」と言いたくなる'},
+    ]
+  },
+  {
+    n:4,
+    scene:'スタッフCさんが退職を申し出た。話を聞くと、半年前から悩んでいたという。まったく気づいていなかった。',
+    q:'このとき真っ先に感じてしまうのは？',
+    opts:[
+      {d:'A', t:'「なぜ半年も記録に残してくれなかったのか。もっと早く言語化して相談してほしかった」'},
+      {d:'B', t:'「なんで黙ってた。言えばどうにでもなったのに。こっちには伝わってなかった」と言いたくなる'},
+      {d:'C', t:'「話が長くなりそう…。要点だけ先に言ってほしい」と内心思ってしまう'},
+      {d:'D', t:'「自分が何か至らなかったのかな…。嫌われてたのかな」と不安になってしまう'},
+      {d:'E', t:'「あれだけ時間をかけて育てたのに、それでも足りなかったのか」と虚しくなってしまう'},
+    ]
+  },
+  {
+    n:5,
+    scene:'朝礼でスタッフDさんが先週の反省点を発表。話が長く、要点がつかみにくい。他のスタッフも少し退屈そうにしている。',
+    q:'あなたはどう反応してしまいますか？',
+    opts:[
+      {d:'A', t:'「ちょっと待って。結論から言って、その後に理由。それがプレゼンの基本だよ」と遮ってしまう'},
+      {d:'B', t:'「もういい、俺が言う」と話を引き取って、自分でまとめてしまう'},
+      {d:'C', t:'「結論だけ教えて。30秒で言える？」とスパッと切ってしまう'},
+      {d:'D', t:'「頑張って話してるのに…。後でこっそりアドバイスしよう」とその場では何も言えない'},
+      {d:'E', t:'「準備不足だよ。発表する以上は前日に練習してきてほしい」と思ってしまう'},
+    ]
+  },
+  {
+    n:6,
+    scene:'定休日。久しぶりに一人でカフェに来た。コーヒーを飲みながら、ぼんやりしているつもりが……',
+    q:'気づくと何をしていますか？',
+    opts:[
+      {d:'A', t:'「あの棚、ホコリがたまってたかも。清掃チェックリスト、見直した方がいいな」とメモし始める'},
+      {d:'B', t:'「休んでいる場合じゃない気がする」と罪悪感が湧いてきて、ゆっくりできていない'},
+      {d:'C', t:'「ここ、回転が遅い。スタッフの動線もっとこうすれば効率上がるのに」と分析している'},
+      {d:'D', t:'「今日スタッフたちはどうしてるかな。自分がいなくてもうまくやれてるかな」と気になっている'},
+      {d:'E', t:'来週の売上目標、先月のリピート率、新規の集客施策…頭の中が仕事でいっぱいになっている'},
+    ]
+  },
+  {
+    n:7,
+    scene:'月に一度の個人面談。スタッフEさんから「給与を上げてほしいです」と切り出された。今期は目標未達が続いている。',
+    q:'あなたが最初に返してしまいそうな言葉は？',
+    opts:[
+      {d:'A', t:'「根拠を見せてほしい。何を達成したら上げるべきか、数字で整理して持ってきて」'},
+      {d:'B', t:'「俺が給料上げてもらえたのは、自分で結果を出してからだよ。まず実力をつけて」'},
+      {d:'C', t:'「今は時期が悪い。とにかくまず数字を出してから話そう」と短く切り上げてしまう'},
+      {d:'D', t:'「う、そうか…考えてみる」とその場で断れずに曖昧に答えてしまう'},
+      {d:'E', t:'「頑張ってるのはわかる。でも頑張り以上の結果が出てから言ってほしいな」と返してしまう'},
+    ]
+  },
+  {
+    n:8,
+    scene:'繁忙期前。スタッフFさんが「この受付の流れ、変えた方がお客様もスタッフも動きやすいと思うんですが」と提案してきた。',
+    q:'このとき、正直に感じてしまうのは？',
+    opts:[
+      {d:'A', t:'「今のやり方にはちゃんと理由がある。変えて質が落ちたら困る。まず現状を完璧に習得してから言って」'},
+      {d:'B', t:'「やってみてダメなら戻せばいい。ごちゃごちゃ言わずにやれ」と思ってしまう'},
+      {d:'C', t:'「話が長い。結論と工数だけ教えて、3分で説明できる？」とイライラが出てしまう'},
+      {d:'D', t:'「せっかく提案してくれたのに否定したら可哀想かな…。でも変えたくないな」と板挟みになる'},
+      {d:'E', t:'「楽をしようとしてるんじゃないか。今のやり方で頑張れないなら、まだ早い」と感じてしまう'},
+    ]
+  },
+  {
+    n:9,
+    scene:'売上が3ヶ月連続で目標を下回った。スタッフ全員を集めて話し合いの場を設けた。',
+    q:'この場で、あなたが無意識にやってしまいそうなことは？',
+    opts:[
+      {d:'A', t:'原因を全部洗い出してリスト化しないと気が済まない。「漏れがあったら困る」と細かく確認してしまう'},
+      {d:'B', t:'「結果が出ていない、以上。来月どうするか各自考えてこい」と感情を出さず締めてしまう'},
+      {d:'C', t:'「原因分析は後でいい。まず来月何をするか、今日中に決めよう」と議論を急かしてしまう'},
+      {d:'D', t:'「みんなを責めたくない…。自分のマネジメントが悪かったのかも」と言いたいことが言えない'},
+      {d:'E', t:'「結局、気合いと行動量が足りない。もっと本気でやれば必ず結果は出る」と言いたくなる'},
+    ]
+  },
+  {
+    n:10,
+    scene:'スタッフGさんがお客様対応でミスをし、クレームが入った。大事にはならなかったが、同じミスは2回目だ。',
+    q:'その後、あなたが自然と取る行動は？',
+    opts:[
+      {d:'A', t:'再発防止シートを作り、同じミスが起きないよう全パターンを想定してチェックリストを整備する'},
+      {d:'B', t:'「2回目はない。次やったら本当に困る」と短く、はっきり告げて終わりにする'},
+      {d:'C', t:'「なぜ1回目で直さなかった。報告も遅い。スピード感が足りない」と指摘してしまう'},
+      {d:'D', t:'「強く言いすぎたかな…」と罪悪感が出て、後からフォローしすぎてしまう'},
+      {d:'E', t:'「同じミスをするということは、本気で直そうとしていない証拠だ」と感じてしまう'},
+    ]
+  },
+];
+
+/* ════ State ════ */
+let cur = 0;
+let sc  = {A:0,B:0,C:0,D:0,E:0};
+let nickname = '';
+let resultData = {};
+
+/* ════ Util ════ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ════ Start ════ */
+function startQuiz(){
+  const raw = document.getElementById('nickname').value.trim();
+  nickname = raw || '匿名オーナー';
+  cur=0; sc={A:0,B:0,C:0,D:0,E:0};
+  showScreen('screen-quiz');
+  render();
+}
+
+/* ════ Render question ════ */
+function render(){
+  const q = QS[cur];
+  const pct = Math.round((cur/QS.length)*100);
+  document.getElementById('pf').style.width = pct+'%';
+  document.getElementById('pn').textContent = `${cur+1} / ${QS.length}`;
+
+  const opts = [...q.opts].sort(()=>Math.random()-0.5);
+  document.getElementById('qbody').innerHTML = `
+    <div class="scene-card">
+      <div class="scene-label">Scene ${String(cur+1).padStart(2,'0')} / ${QS.length}</div>
+      <div class="scene-text">${q.scene}<span class="scene-arrow">↓ あなたの反応は？</span></div>
+    </div>
+    <div class="question-wrap">
+      <div class="q-label">Your Reaction</div>
+      <div class="q-text">${q.q}</div>
+    </div>
+    <div class="opts">
+      ${opts.map((o,i)=>`
+        <button class="opt-btn" onclick="pick('${o.d}',this)">
+          <span class="opt-n">${i+1}</span>
+          <span class="opt-t">${o.t}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ════ Pick answer ════ */
+function pick(dKey, btn){
+  sc[dKey]++;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.style.pointerEvents='none');
+  btn.classList.add('selected');
+  setTimeout(()=>{ cur++; cur<QS.length ? render() : showResult(); }, 400);
+}
+
+/* ════ Show result ════ */
+function showResult(){
+  document.getElementById('pf').style.width='100%';
+  document.getElementById('pn').textContent=`${QS.length} / ${QS.length}`;
+
+  const sorted = Object.entries(sc).sort((a,b)=>b[1]-a[1]);
+  const [mainK, mainV] = sorted[0];
+  const [subK,  subV]  = sorted[1];
+  const main = DRV[mainK], sub = DRV[subK];
+  const total = QS.length;
+  const ts = new Date().toLocaleString('ja-JP');
+
+  // store for CSV
+  resultData = { nickname, mainK, mainV, subK, subV, sorted, ts };
+
+  showScreen('screen-result');
+
+  const barColors = ['#c4391a','#b8960c','#1a3c5e','#2d6a4f','#7a1f1f'];
+  const bars = sorted.map(([k,v],i)=>{
+    const d = DRV[k];
+    const pct = Math.round((v/total)*100);
+    return `
+      <div class="sbar">
+        <div class="sbar-top">
+          <div class="sbar-nm">${d.emoji} ${d.name} <span>${d.en}</span></div>
+          <div class="sbar-v">${v}問 (${pct}%)</div>
+        </div>
+        <div class="sbar-track">
+          <div class="sbar-fill" id="sf-${k}" style="background:${barColors[i]}"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('rwrap').innerHTML = `
+    <div class="r-eyebrow">診断結果 — ${nickname}</div>
+    <div class="r-main-name">${main.emoji} ${main.name}</div>
+    <div class="r-main-en">${main.en}</div>
+    <div class="r-voice">内なる声：${main.voice}</div>
+    <div class="r-pcm-badge">📊 ${main.pcm}</div>
+    <div class="r-divider"></div>
+
+    <div class="score-section">
+      <div class="sec-label">Score Breakdown</div>
+      ${bars}
+    </div>
+
+    <div class="detail-cards">
+      <div class="dcard strength">
+        <div class="dcard-badge">Strength — 得意なシーン</div>
+        <div class="dcard-title">💪 あなたの強み</div>
+        <div class="dcard-body">${main.strength.replace(/\n/g,'<br>')}</div>
+      </div>
+
+      <div class="dcard shadow">
+        <div class="dcard-badge">Shadow — 無自覚な落とし穴</div>
+        <div class="dcard-title">⚠️ 経営の落とし穴</div>
+        <div class="dcard-body">${main.shadow.replace(/\n/g,'<br>')}</div>
+      </div>
+
+      <div class="dcard jobs">
+        <div class="dcard-badge">Aptitude — 適性業務・動詞</div>
+        <div class="dcard-title">🎯 あなたが輝く業務</div>
+        <div class="dcard-body">${main.jobs}</div>
+        <div class="verb-row">
+          ${main.verbs.map((v,i)=>`<span class="verb ${i===0?'dark':i%3===0?'gold':''}">${v}</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="dcard sub">
+        <div class="dcard-badge">Sub Driver — ${sub.en} (${subV}問)</div>
+        <div class="dcard-title">${sub.emoji} ${sub.name}</div>
+        <div class="dcard-body">
+          <strong>PCM：</strong>${sub.pcm}<br><br>
+          ${sub.strength.split('\n')[1] || sub.strength.substring(0, 120)}…
+        </div>
+      </div>
+    </div>
+
+    <div class="insight">
+      <div class="insight-body">${main.insight}</div>
+      <div class="insight-act">Next Step → ${main.action}</div>
+    </div>
+
+    <div class="perm-box">
+      <div class="dcard-badge" style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;">Core Message</div>
+      <div class="perm-title">このドライバーは、あなたのせいではない</div>
+      <div class="perm-body">子供の頃に受け取ったメッセージが、そのまま経営スタイルになっているだけです。気づいた今日から、あなたは「選べる」ようになります。</div>
+      <div class="perm-list">
+        ${['完璧じゃなくていい','弱くてもいい','ゆっくりでいい','嫌われてもいい','休んでいい'].map(t=>`
+          <div class="perm-item"><div class="perm-dot">✓</div>${t}</div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-row">
+      <button class="btn-dl" onclick="downloadCSV()">
+        ⬇ 診断結果をCSVでダウンロード
+      </button>
+      <a class="btn-line" id="line-share-btn" href="#" onclick="shareToLINE(event)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 4.11 2.78 7.6 6.71 9.18.46.18.67-.2.67-.44 0-.22-.01-.81-.01-1.58-2.59.56-3.13-1.25-3.13-1.25-.42-1.07-1.04-1.35-1.04-1.35-.85-.58.06-.57.06-.57.94.07 1.43.96 1.43.96.83 1.43 2.19 1.01 2.72.78.08-.6.33-1.01.59-1.24-2.07-.24-4.24-1.03-4.24-4.6 0-1.01.36-1.84.96-2.49-.1-.23-.42-1.18.09-2.46 0 0 .78-.25 2.55.95A8.84 8.84 0 0112 7.4c.79 0 1.58.11 2.32.32 1.77-1.2 2.55-.95 2.55-.95.51 1.28.19 2.23.09 2.46.6.65.96 1.48.96 2.49 0 3.58-2.18 4.36-4.26 4.59.33.29.63.86.63 1.73 0 1.25-.01 2.25-.01 2.56 0 .24.2.63.67.44C19.22 18.6 22 15.1 22 11c0-4.98-4.48-9-10-9z"/></svg>
+        LINEで結果をシェアする
+      </a>
+    </div>
+
+    <div class="cta-block">
+      <div class="cta-title">セミナーで、もっと深く。</div>
+      <div class="cta-sub">5タイプの詳細解説とスタッフへの活用法を<br>セミナーでお伝えします。</div>
+      <button class="btn-cta">LINE友だち追加で全解説PDF受け取る</button>
+      <button class="btn-retry" onclick="startQuiz()">もう一度診断する</button>
+    </div>
+  `;
+
+  setTimeout(()=>{
+    sorted.forEach(([k,v])=>{
+      const el=document.getElementById('sf-'+k);
+      if(el) el.style.width=Math.round((v/total)*100)+'%';
+    });
+  },500);
+}
+
+/* ════ CSV Download ════ */
+function downloadCSV(){
+  const { nickname, mainK, mainV, subK, subV, sorted, ts } = resultData;
+  const main = DRV[mainK], sub = DRV[subK];
+
+  const escCSV = v => `"${String(v).replace(/"/g,'""')}"`;
+
+  const headers = [
+    'ニックネーム','診断日時',
+    'メインドライバー','メインドライバーEN','メインスコア',
+    'サブドライバー','サブドライバーEN','サブスコア',
+    'PCM分類（メイン）',
+    '強みサマリー','落とし穴サマリー','適性業務','主要動詞',
+    'Next Action',
+    'スコアA(完璧であれ)','スコアB(強くあれ)','スコアC(急げ)','スコアD(喜ばせろ)','スコアE(努力しろ)',
+  ];
+
+  const scMap = Object.fromEntries(sorted);
+  const values = [
+    escCSV(nickname),
+    escCSV(ts),
+    escCSV(main.name),
+    escCSV(main.en),
+    mainV,
+    escCSV(sub.name),
+    escCSV(sub.en),
+    subV,
+    escCSV(main.pcm),
+    escCSV(main.strength.replace(/\n/g,' ').replace(/【[^】]+】/g,'').trim().substring(0,200)+'…'),
+    escCSV(main.shadow.replace(/\n/g,' ').replace(/【[^】]+】/g,'').trim().substring(0,200)+'…'),
+    escCSV(main.jobs),
+    escCSV(main.verbs.join(' / ')),
+    escCSV(main.action),
+    scMap['A']||0, scMap['B']||0, scMap['C']||0, scMap['D']||0, scMap['E']||0,
+  ];
+
+  const bom = '\uFEFF';
+  const csv = bom + headers.join(',') + '\n' + values.join(',');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ドライバー診断_${nickname}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ════ LINE Share ════ */
+function shareToLINE(e){
+  e.preventDefault();
+  const { nickname, mainK, subK, mainV, subV } = resultData;
+  const main = DRV[mainK], sub = DRV[subK];
+  const text = `【5ドライバー診断 結果】\n`
+    + `名前：${nickname}\n`
+    + `━━━━━━━━━━━━\n`
+    + `🏅 メイン：${main.emoji}${main.name}（${mainV}問）\n`
+    + `${main.en}\n`
+    + `内なる声：${main.voice}\n\n`
+    + `📊 PCM：${main.pcm}\n\n`
+    + `2位：${sub.emoji}${sub.name}（${subV}問）\n`
+    + `━━━━━━━━━━━━\n`
+    + `Next → ${main.action}`;
+
+  const encoded = encodeURIComponent(text);
+  window.open(`https://social-plugins.line.me/lineit/share?url=&text=${encoded}`, '_blank');
+}
+</script>
+</body>
+</html>
